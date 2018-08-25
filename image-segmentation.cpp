@@ -16,6 +16,7 @@ void imageToMatrix(string filename, vector<vector<int> > &M, unsigned int &r, un
     in_file.open(filename);
     in_file>>filename;
     in_file >> r >> c;
+    in_file>> filename;
     M.resize(r);
     for(int i=0; i<r; i++){
         M[i].resize(c);
