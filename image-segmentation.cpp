@@ -5,18 +5,21 @@
 #include <array>
 #include <queue>
 #include <algorithm>
+#include <chrono>
 
 using namespace std;
+using namespace std::chrono;
 
 typedef pair<int, int> point;
 
 
 void imageToMatrix(string filename, vector<vector<int> > &M, unsigned int &r, unsigned int &c){
     ifstream in_file;
+    string trash;
     in_file.open(filename);
-    in_file>>filename;
+    in_file>>trash;
     in_file >> r >> c;
-    in_file>> filename;
+    in_file>> trash;
     M.resize(r);
     for(int i=0; i<r; i++){
         M[i].resize(c);
@@ -55,9 +58,9 @@ void floodFill (point pos,  vector<vector<int> > &M, array<point, 8> &directions
 }
 
 int main(){
-
     string filename;
     cin >> filename;
+    high_resolution_clock::time_point t1=high_resolution_clock::now();
     vector<vector<int> > M;
     unsigned int c, r;
     imageToMatrix(filename, M, r, c);
@@ -80,4 +83,14 @@ int main(){
     }
     sort(ans.begin(), ans.end());
     cout << "La imagen tiene " << ans.size() << " elementos conexos\n";
+
+    ofstream out_file;
+    out_file.open("output.txt", ios::trunc);
+    for(int i=0; i<ans.size(); i++) out_file << "Componente " << i << " : " << ans[i].first << " elementos\n";
+    out_file.close();
+
+    high_resolution_clock::time_point t2=high_resolution_clock::now();
+    duration<double> time_span=duration_cast<duration<double> >(t2-t1);
+    cout << "Tiempo de ejecucion: "<< time_span.count()<< " segundos\n";
+    return 0;
 }
