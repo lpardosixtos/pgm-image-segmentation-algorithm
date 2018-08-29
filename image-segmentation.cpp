@@ -12,14 +12,14 @@ using namespace std::chrono;
 
 typedef pair<int, int> point;
 
-//Lee imagen y la guarda en una matriz, guarda el número de filas en r y el de columnas en c
+//Lee imagen y la guarda en una matriz, guarda el número de filas en r y el de columnas en c.
 void imageToMatrix(string filename, vector<vector<int> > &M, unsigned int &r, unsigned int &c){
     ifstream in_file;
     string trash;
     in_file.open(filename);
-    in_file>>trash; //Palabra mágica de pgm
+    in_file>>trash; //Palabra mágica de pgm.
     in_file >> c >> r;
-    in_file>> trash; //Máximo valor dentro de la imagen
+    in_file>> trash; //Máximo valor dentro de la imagen.
     M.resize(r);
     for(int i=0; i<r; i++){
         M[i].resize(c);
@@ -31,7 +31,7 @@ void imageToMatrix(string filename, vector<vector<int> > &M, unsigned int &r, un
     in_file.clear();
 }
 
-//Algoritmo principal, inicia el flujo en el punto dado y continua hacia vecinos de su mismo color
+//Algoritmo principal, inicia el flujo en el punto dado y continua hacia vecinos de su mismo color.
 //Guarda un representante de cada componente blanca (255) junto con el tamaño de la componente.
 void floodFill (point pos,  vector<vector<int> > &M, array<point, 8> &directions, vector<pair<int, point> > &ans, int &cont){
     int r=M.size(), c=M[0].size();
@@ -45,18 +45,19 @@ void floodFill (point pos,  vector<vector<int> > &M, array<point, 8> &directions
         pos=bf.front();
         bf.pop();
         if(!(pos.first<0 || pos.first>=r || pos.second<0 || pos.second>=c)){//Los valores están en la matrix
-            if(M[pos.first][pos.second]==color){//Revisa si la celda aún es del color de la celda que inició
+            //Revisa si la celda aún es del color de la celda que inició y si no se ha pasado por ella.
+            if(M[pos.first][pos.second]==color){
                 if(color){
                     auxp.first++;
                     M[pos.first][pos.second]=-cont;
-                    //Cada punto blanco se identifica con su número de componente
+                    //Cada punto blanco se identifica con su número de componente.
                 }
-                else M[pos.first][pos.second]=1;//Los puntos negros se dejan en valor positivo no 255
+                else M[pos.first][pos.second]=1;//Los puntos negros se dejan en valor positivo no 255.
                 for(int i=0; i<sz; i++){
                     point aux=pos;
                     aux.first+=directions[i].first;
                     aux.second+=directions[i].second;
-                    bf.push(aux);//Se agrega a todos los vecinos a la cola
+                    bf.push(aux);//Se agrega a todos los vecinos a la cola.
                 }
             }
         }
@@ -64,6 +65,7 @@ void floodFill (point pos,  vector<vector<int> > &M, array<point, 8> &directions
     if(color==255) ans.push_back(auxp);
 }
 
+//Imprime en pgm una componente conexa dada una celda de ella.
 void printComp(string filename, vector<vector<int> > &M, point &pos, unsigned int &r, unsigned int &c){
 	int color=M[pos.first][pos.second];
 	ofstream imFile;
@@ -73,7 +75,7 @@ void printComp(string filename, vector<vector<int> > &M, point &pos, unsigned in
     imFile << 255 << "\n";
 	for(int i=0; i<r; i++){
 		for(int j=0; j<c; j++){
-			if(M[i][j]==color) imFile << 255 <<"\n";
+			if(M[i][j]==color) imFile << 255 <<"\n";//Identifica si el punto pertenece a la componente.
 			else imFile << 0 << "\n";
 		}
 	}
@@ -82,6 +84,7 @@ void printComp(string filename, vector<vector<int> > &M, point &pos, unsigned in
 
 
 int main(){
+    //Llena el arreglo de direcciones.
     array<point, 8> directions;
     for(int i=0; i<3; i++) directions[i].first=-1;
     directions[3].first=0;
@@ -92,6 +95,7 @@ int main(){
     for(int i=6; i<8; i++) directions[i].second=-1;
     directions[0].second=-1;
     directions[1].second=0;
+    //Itera sobre las 5 ímágenes.
     for(int k=1; k<=5; k++){
         vector<vector<int> > M;
         string finName="Img0";
@@ -102,7 +106,7 @@ int main(){
         unsigned int c, r;
         imageToMatrix(finName, M, r, c);
         vector<pair<int, point> > ans;
-        high_resolution_clock::time_point t1=high_resolution_clock::now();
+        high_resolution_clock::time_point t1=high_resolution_clock::now();//Inicia tiempo.
         int cont=0;
         for(int i=0; i<r; i++){
             for(int j=0; j<c; j++){
@@ -110,8 +114,9 @@ int main(){
                 if(M[i][j]==0 || M[i][j]==255)floodFill(pos, M, directions, ans, cont);
             }
         }
+        //Ordena las componentes con respecto a su tamaño.
         sort(ans.begin(), ans.end());
-        high_resolution_clock::time_point t2=high_resolution_clock::now();
+        high_resolution_clock::time_point t2=high_resolution_clock::now();//Finaliza tiempo
         duration<double> time_span=duration_cast<duration<double> >(t2-t1);
         cout << "La imagen "<< k << " tiene " << ans.size() << " elementos conexos\n";
         string foutName="Out0";
@@ -126,10 +131,12 @@ int main(){
        	foutName="MinComp0";
        	foutName.push_back(c1);
        	foutName+=".pgm";
+        //Imprime componente de menor tamaño.
        	printComp(foutName, M, ans[0].second, r, c);
        	foutName="MaxComp0";
        	foutName.push_back(c1);
        	foutName+=".pgm";
+        //Imprime componente de mayor tamaño.
        	printComp(foutName, M, ans.back().second, r, c);
 
     }
