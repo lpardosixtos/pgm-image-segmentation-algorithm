@@ -38,7 +38,7 @@ void floodFill (point pos,  vector<vector<int> > &M, array<point, 8> &directions
     int sz=directions.size();
     queue<point> bf;
     int color=M[pos.first][pos.second];
-    if(color==255) cont++; //Lleva la cuenta de las componentes
+    cont++; //Lleva la cuenta de las componentes
     bf.push(pos);
     pair<int, point> auxp=make_pair(1, pos);
     while(!bf.empty()){
@@ -47,12 +47,8 @@ void floodFill (point pos,  vector<vector<int> > &M, array<point, 8> &directions
         if(!(pos.first<0 || pos.first>=r || pos.second<0 || pos.second>=c)){//Los valores están en la matrix
             //Revisa si la celda aún es del color de la celda que inició y si no se ha pasado por ella.
             if(M[pos.first][pos.second]==color){
-                if(color){
-                    auxp.first++;
-                    M[pos.first][pos.second]=-cont;
-                    //Cada punto blanco se identifica con su número de componente.
-                }
-                else M[pos.first][pos.second]=1;//Los puntos negros se dejan en valor positivo no 255.
+                auxp.first++;
+                M[pos.first][pos.second]=-cont;  //Cada punto blanco se identifica con su número de componente.
                 for(int i=0; i<sz; i++){
                     point aux=pos;
                     aux.first+=directions[i].first;
@@ -62,12 +58,13 @@ void floodFill (point pos,  vector<vector<int> > &M, array<point, 8> &directions
             }
         }
     }
-    if(color==255) ans.push_back(auxp);
+    ans.push_back(auxp);
 }
 
-//Imprime en pgm una componente conexa dada una celda de ella.
-void printComp(string filename, vector<vector<int> > &M, point &pos, unsigned int &r, unsigned int &c){
+//Imprime en pgm dos componentes conexas dada una celda de cada una.
+void printComp(string filename, vector<vector<int> > &M, point &pos,  point &pos2, unsigned int &r, unsigned int &c){
 	int color=M[pos.first][pos.second];
+    int color1=M[pos2.first][pos2.second];
 	ofstream imFile;
 	imFile.open(filename, ios::trunc);
 	imFile << "P2" << "\n";
@@ -76,7 +73,10 @@ void printComp(string filename, vector<vector<int> > &M, point &pos, unsigned in
 	for(int i=0; i<r; i++){
 		for(int j=0; j<c; j++){
 			if(M[i][j]==color) imFile << 255 <<"\n";//Identifica si el punto pertenece a la componente.
-			else imFile << 0 << "\n";
+            else{
+                if(M[i][j]==color1) imFile << 120 << "\n";
+			    else imFile << 0 << "\n";
+            }
 		}
 	}
 	imFile.close();
@@ -111,7 +111,7 @@ int main(){
         for(int i=0; i<r; i++){
             for(int j=0; j<c; j++){
                 point pos(i, j);
-                if(M[i][j]==0 || M[i][j]==255)floodFill(pos, M, directions, ans, cont);
+                if(M[i][j]==255)floodFill(pos, M, directions, ans, cont);
             }
         }
         //Ordena las componentes con respecto a su tamaño.
@@ -125,19 +125,14 @@ int main(){
         ofstream out_file;
         out_file.open(foutName, ios::trunc);
         out_file << "Las dimensiones de la imagen son: " << c << " " << r << "\n";
-        for(int i=0; i<ans.size(); i++) out_file << "Componente " << i << " : " << ans[i].first << " elementos\n";
+        for(int i=0; i<ans.size(); i++) out_file << "Componente " << i+1 << " : " << ans[i].first << " pixeles\n";
         out_file.close();
         cout << "Tiempo de ejecucion: "<< time_span.count()<< " segundos\n";
-       	foutName="MinComp0";
+       	foutName="Comps0";
        	foutName.push_back(c1);
        	foutName+=".pgm";
-        //Imprime componente de menor tamaño.
-       	printComp(foutName, M, ans[0].second, r, c);
-       	foutName="MaxComp0";
-       	foutName.push_back(c1);
-       	foutName+=".pgm";
-        //Imprime componente de mayor tamaño.
-       	printComp(foutName, M, ans.back().second, r, c);
+        //Imprime componentes de menor y mayor tamaño.
+       	printComp(foutName, M, ans[0].second, ans.back().second, r, c);
 
     }
     return 0;
